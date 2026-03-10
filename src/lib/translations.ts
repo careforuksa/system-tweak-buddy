@@ -312,5 +312,10 @@ export const translations = {
     companyDues: 'Company Dues',
     individualDues: 'Individual Dues',
     companyPatientNote: 'This patient belongs to a company, payment will be recorded from the company account later',
+    addToPackage: 'Add to Treatment Package',
+    selectPackage: 'Select Package',
+    noPackage: 'No package',
+    newPackageAuto: 'Create new package automatically',
+    sessionWillBeLogged: 'A session will be automatically logged in the selected package',
   }
 };
