@@ -63,9 +63,21 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
   const [totalSessions, setTotalSessions] = useState(initialData?.total_sessions?.toString() || '1');
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isPaid, setIsPaid] = useState(initialData?.is_paid === 1);
+  const [selectedPackageId, setSelectedPackageId] = useState('');
 
   const selectedPatient = patients.find(p => p.id.toString() === patientId);
   const isCompanyPatient = !!selectedPatient?.company_id;
+
+  // Get active packages for the selected patient
+  const allPackages = dataStore.getPackages();
+  const patientPackages = patientId
+    ? allPackages.filter(p => p.patient_id === parseInt(patientId) && p.status === 'active')
+    : [];
+
+  // Filter by selected service if chosen
+  const matchingPackages = serviceId
+    ? patientPackages.filter(p => p.service_id === parseInt(serviceId))
+    : patientPackages;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +106,11 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
         notes,
         is_paid: finalIsPaid,
       });
+
+      // Log session to selected package
+      if (selectedPackageId && selectedPackageId !== 'new') {
+        dataStore.addSessionLog(parseInt(selectedPackageId), date, notes || '');
+      }
     }
     onSuccess();
   };
