@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Building2, Clock } from 'lucide-react';
+import { Building2, Clock, Package as PackageIcon } from 'lucide-react';
 import { translations } from '@/lib/translations';
-import { Company, Patient, Visit, Service } from '@/types/caretrack';
+import { Company, Patient, Visit, Service, Package } from '@/types/caretrack';
 import * as dataStore from '@/lib/dataStore';
 
 export function AddPatientForm({ companies, onSuccess, initialData, lang }: { companies: Company[]; onSuccess: () => void; initialData?: Patient; lang: 'ar' | 'en' }) {
