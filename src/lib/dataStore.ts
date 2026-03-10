@@ -29,7 +29,7 @@ function setAll<T>(key: string, data: T[]): void {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-// Initialize with default services if empty
+// Initialize with default services and companies if empty
 function initDefaults() {
   const services = getAll<Service>(STORAGE_KEYS.services);
   if (services.length === 0) {
@@ -39,6 +39,18 @@ function initDefaults() {
       { id: getNextId('services'), name: 'زيارة أخصائي تغذية' },
     ];
     setAll(STORAGE_KEYS.services, defaults);
+  }
+
+  const companies = getAll<Company>(STORAGE_KEYS.companies);
+  if (companies.length === 0) {
+    const defaultCompanies: Company[] = [
+      { id: getNextId('companies'), name: 'ذات قروب / That Group', contact_person: '', phone: '', payment_period: 'weekly', last_payment_date: null, next_payment_date: null },
+      { id: getNextId('companies'), name: 'إشفاء / Ishfaa', contact_person: '', phone: '', payment_period: 'monthly', last_payment_date: null, next_payment_date: null },
+      { id: getNextId('companies'), name: 'نرعاكم / Naraakom', contact_person: '', phone: '', payment_period: 'monthly', last_payment_date: null, next_payment_date: null },
+      { id: getNextId('companies'), name: 'حكيم كير / Hakeem Care', contact_person: '', phone: '', payment_period: 'monthly', last_payment_date: null, next_payment_date: null },
+      { id: getNextId('companies'), name: 'وتد / Watad', contact_person: '', phone: '', payment_period: 'monthly', last_payment_date: null, next_payment_date: null },
+    ];
+    setAll(STORAGE_KEYS.companies, defaultCompanies);
   }
 }
 initDefaults();
