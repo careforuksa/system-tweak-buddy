@@ -153,6 +153,11 @@ export const translations = {
     companyDues: 'مستحقات الشركات',
     individualDues: 'مستحقات الأفراد',
     companyPatientNote: 'هذا المريض تابع لشركة، سيتم تسجيل الدفع من حساب الشركة لاحقاً',
+    addToPackage: 'إضافة إلى برنامج علاجي',
+    selectPackage: 'اختر البرنامج العلاجي',
+    noPackage: 'بدون برنامج علاجي',
+    newPackageAuto: 'إنشاء برنامج جديد تلقائياً',
+    sessionWillBeLogged: 'سيتم تسجيل جلسة تلقائياً في البرنامج العلاجي المحدد',
   },
   en: {
     appName: 'CareTrack',
