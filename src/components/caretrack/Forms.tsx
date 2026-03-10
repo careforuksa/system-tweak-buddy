@@ -156,6 +156,30 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
           )}
         </div>
       )}
+      {/* Add to Package option */}
+      {!initialData && patientId && matchingPackages.length > 0 && (
+        <div>
+          <label className="block text-sm font-bold text-foreground mb-1">
+            <span className="flex items-center gap-1">
+              <PackageIcon size={14} /> {t.addToPackage}
+            </span>
+          </label>
+          <select value={selectedPackageId} onChange={(e) => setSelectedPackageId(e.target.value)}
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none">
+            <option value="">{t.noPackage}</option>
+            {matchingPackages.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.service_name} — {p.used_sessions}/{p.total_sessions} {t.sessions}
+              </option>
+            ))}
+          </select>
+          {selectedPackageId && (
+            <p className="mt-1 text-[10px] text-primary font-bold flex items-center gap-1">
+              <PackageIcon size={12} /> {t.sessionWillBeLogged}
+            </p>
+          )}
+        </div>
+      )}
       <div className={`grid ${isCompanyPatient ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
         <div>
           <label className="block text-sm font-bold text-foreground mb-1">{t.amount} ({t.sar})</label>
