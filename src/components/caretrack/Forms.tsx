@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Building2, Clock } from 'lucide-react';
+import { Building2, Clock, Package as PackageIcon } from 'lucide-react';
 import { translations } from '@/lib/translations';
-import { Company, Patient, Visit, Service } from '@/types/caretrack';
+import { Company, Patient, Visit, Service, Package } from '@/types/caretrack';
 import * as dataStore from '@/lib/dataStore';
 
 export function AddPatientForm({ companies, onSuccess, initialData, lang }: { companies: Company[]; onSuccess: () => void; initialData?: Patient; lang: 'ar' | 'en' }) {
@@ -63,9 +63,21 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
   const [totalSessions, setTotalSessions] = useState(initialData?.total_sessions?.toString() || '1');
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isPaid, setIsPaid] = useState(initialData?.is_paid === 1);
+  const [selectedPackageId, setSelectedPackageId] = useState('');
 
   const selectedPatient = patients.find(p => p.id.toString() === patientId);
   const isCompanyPatient = !!selectedPatient?.company_id;
+
+  // Get active packages for the selected patient
+  const allPackages = dataStore.getPackages();
+  const patientPackages = patientId
+    ? allPackages.filter(p => p.patient_id === parseInt(patientId) && p.status === 'active')
+    : [];
+
+  // Filter by selected service if chosen
+  const matchingPackages = serviceId
+    ? patientPackages.filter(p => p.service_id === parseInt(serviceId))
+    : patientPackages;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +106,11 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
         notes,
         is_paid: finalIsPaid,
       });
+
+      // Log session to selected package
+      if (selectedPackageId && selectedPackageId !== 'new') {
+        dataStore.addSessionLog(parseInt(selectedPackageId), date, notes || '');
+      }
     }
     onSuccess();
   };
@@ -135,6 +152,30 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
             <p className="mt-1 text-[10px] text-ct-blue-500 font-bold flex items-center gap-1">
               <Clock size={12} />
               {lang === 'ar' ? 'سيتم إنشاء برنامج علاجي تلقائياً لهذا المريض' : 'A treatment package will be created automatically'}
+            </p>
+          )}
+        </div>
+      )}
+      {/* Add to Package option */}
+      {!initialData && patientId && matchingPackages.length > 0 && (
+        <div>
+          <label className="block text-sm font-bold text-foreground mb-1">
+            <span className="flex items-center gap-1">
+              <PackageIcon size={14} /> {t.addToPackage}
+            </span>
+          </label>
+          <select value={selectedPackageId} onChange={(e) => setSelectedPackageId(e.target.value)}
+            className="w-full px-4 py-3 bg-muted border border-border rounded-xl outline-none">
+            <option value="">{t.noPackage}</option>
+            {matchingPackages.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.service_name} — {p.used_sessions}/{p.total_sessions} {t.sessions}
+              </option>
+            ))}
+          </select>
+          {selectedPackageId && (
+            <p className="mt-1 text-[10px] text-primary font-bold flex items-center gap-1">
+              <PackageIcon size={12} /> {t.sessionWillBeLogged}
             </p>
           )}
         </div>
