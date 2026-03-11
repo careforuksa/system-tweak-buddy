@@ -41,10 +41,10 @@ export default {
         },
         emerald: {
           50: "hsl(var(--secondary))",
-          100: "hsl(160 30% 90%)",
+          100: "hsl(284 20% 90%)",
           500: "hsl(var(--primary))",
           600: "hsl(var(--primary))",
-          700: "hsl(160 84% 22%)",
+          700: "hsl(284 39% 20%)",
         },
         amber: {
           50: "hsl(var(--amber-bg))",
