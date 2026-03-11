@@ -1,7 +1,7 @@
 
 export const translations = {
   ar: {
-    appName: 'كير تراك',
+    appName: 'CARE4U TRACKER',
     dashboard: 'لوحة التحكم',
     patients: 'المرضى',
     companies: 'الشركات',
