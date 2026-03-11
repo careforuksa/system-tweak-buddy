@@ -53,7 +53,7 @@ export function AddPatientForm({ companies, onSuccess, initialData, lang }: { co
   );
 }
 
-export function AddVisitForm({ patients, services, onSuccess, initialData, lang }: { patients: Patient[]; services: Service[]; onSuccess: () => void; initialData?: Visit; lang: 'ar' | 'en' }) {
+export function AddVisitForm({ patients, services, onSuccess, initialData, lang }: { patients: Patient[]; services: Service[]; onSuccess: (navigateTo?: string) => void; initialData?: Visit; lang: 'ar' | 'en' }) {
   const t = translations[lang];
   const [patientId, setPatientId] = useState(initialData?.patient_id?.toString() || '');
   const [serviceId, setServiceId] = useState(initialData?.service_id?.toString() || '');
