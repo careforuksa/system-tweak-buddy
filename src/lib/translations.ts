@@ -1,7 +1,7 @@
 
 export const translations = {
   ar: {
-    appName: 'كير تراك',
+    appName: 'CARE4U TRACKER',
     dashboard: 'لوحة التحكم',
     patients: 'المرضى',
     companies: 'الشركات',
@@ -160,7 +160,7 @@ export const translations = {
     sessionWillBeLogged: 'سيتم تسجيل جلسة تلقائياً في البرنامج العلاجي المحدد',
   },
   en: {
-    appName: 'CareTrack',
+    appName: 'CARE4U TRACKER',
     dashboard: 'Dashboard',
     patients: 'Patients',
     companies: 'Companies',
