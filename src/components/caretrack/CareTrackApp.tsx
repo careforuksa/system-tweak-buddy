@@ -761,10 +761,10 @@ export default function CareTrackApp() {
           <AddPatientForm companies={companies} initialData={editingPatient} onSuccess={() => { setEditingPatient(null); fetchData(); }} lang={lang} />
         </Modal>}
         {showAddVisit && <Modal title={t.newVisit} onClose={() => setShowAddVisit(false)}>
-          <AddVisitForm patients={patients} services={services} onSuccess={() => { setShowAddVisit(false); fetchData(); }} lang={lang} />
+          <AddVisitForm patients={patients} services={services} onSuccess={(nav) => { setShowAddVisit(false); fetchData(); if (nav === 'packages') setActiveTab('packages'); }} lang={lang} />
         </Modal>}
         {editingVisit && <Modal title={t.edit} onClose={() => setEditingVisit(null)}>
-          <AddVisitForm patients={patients} services={services} initialData={editingVisit} onSuccess={() => { setEditingVisit(null); fetchData(); }} lang={lang} />
+          <AddVisitForm patients={patients} services={services} initialData={editingVisit} onSuccess={(nav) => { setEditingVisit(null); fetchData(); if (nav === 'packages') setActiveTab('packages'); }} lang={lang} />
         </Modal>}
         {showAddCompany && <Modal title={t.newCompany} onClose={() => setShowAddCompany(false)}>
           <AddCompanyForm onSuccess={() => { setShowAddCompany(false); fetchData(); }} lang={lang} />
