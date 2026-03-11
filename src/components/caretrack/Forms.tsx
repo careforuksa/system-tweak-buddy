@@ -112,7 +112,8 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
         dataStore.addSessionLog(parseInt(selectedPackageId), date, notes || '');
       }
     }
-    onSuccess();
+    const sessions = parseInt(totalSessions) || 1;
+    onSuccess(sessions > 1 ? 'packages' : undefined);
   };
 
   return (
