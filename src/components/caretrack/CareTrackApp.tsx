@@ -344,7 +344,7 @@ export default function CareTrackApp() {
                     <button onClick={() => {
                       setActiveTab('visits');
                       setVisitSearch(patient.name);
-                      setShowAddVisit(true);
+                      setShowAddVisit(false);
                       setEditingVisit({ id: 0, patient_id: patient.id, patient_name: patient.name, service_id: 0, service_name: '', company_name: patient.company_name || '', visit_date: new Date().toISOString().split('T')[0], amount: 0, paid_amount: 0, is_paid: 0, notes: '' } as Visit);
                     }} className="bg-secondary text-primary font-bold py-2 rounded-xl hover:opacity-80 transition-opacity text-xs flex items-center justify-center gap-1">
                       <Plus size={14} /> {t.newVisit}
