@@ -227,6 +227,10 @@ export function addVisit(data: {
   return visit;
 }
 
+export function deleteVisit(id: number): void {
+  setAll(STORAGE_KEYS.visits, getAll<Visit>(STORAGE_KEYS.visits).filter(v => v.id !== id));
+}
+
 export function updateVisit(id: number, data: Partial<Visit>): void {
   const visits = getAll<Visit>(STORAGE_KEYS.visits);
   const idx = visits.findIndex(v => v.id === id);
