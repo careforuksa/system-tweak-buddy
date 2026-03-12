@@ -251,6 +251,26 @@ export function toggleVisitPaid(id: number, isPaid: boolean): void {
   }
 }
 
+// ===== Effective Amount (prorated by completed sessions) =====
+export function getEffectiveAmount(visit: Visit): number {
+  if (visit.total_sessions && visit.total_sessions > 1) {
+    // Find the package to get used_sessions
+    const packages = getAll<Package>(STORAGE_KEYS.packages);
+    const pkg = packages.find(
+      p => p.patient_id === visit.patient_id && p.service_id === visit.service_id
+    );
+    const usedSessions = pkg ? pkg.used_sessions : (visit.used_sessions || 0);
+    const perSession = visit.amount / visit.total_sessions;
+    return perSession * usedSessions;
+  }
+  return visit.amount;
+}
+
+export function getEffectiveBalance(visit: Visit): number {
+  const effective = getEffectiveAmount(visit);
+  return Math.max(0, effective - (visit.paid_amount || 0));
+}
+
 // ===== Stats =====
 export function getStats(): Stats {
   const patients = getPatients();
@@ -261,15 +281,15 @@ export function getStats(): Stats {
 
   const companyPending = pendingVisits
     .filter(v => v.company_name)
-    .reduce((sum, v) => sum + (v.amount - (v.paid_amount || 0)), 0);
+    .reduce((sum, v) => sum + getEffectiveBalance(v), 0);
 
   const directPending = pendingVisits
     .filter(v => !v.company_name)
-    .reduce((sum, v) => sum + (v.amount - (v.paid_amount || 0)), 0);
+    .reduce((sum, v) => sum + getEffectiveBalance(v), 0);
 
   return {
     total_patients: patients.length,
-    pending_amount: pendingVisits.reduce((sum, v) => sum + (v.amount - (v.paid_amount || 0)), 0),
+    pending_amount: pendingVisits.reduce((sum, v) => sum + getEffectiveBalance(v), 0),
     paid_amount: paidVisits.reduce((sum, v) => sum + v.paid_amount, 0),
     company_pending: companyPending,
     direct_pending: directPending,
