@@ -502,6 +502,8 @@ export default function CareTrackApp() {
                                     visit.is_paid ? 'text-muted-foreground hover:text-amber-600' : 'text-primary hover:bg-secondary'
                                   }`}>{visit.is_paid ? t.undo : t.confirm}</button>
                                 <button onClick={() => setEditingVisit(visit)} className="text-xs font-bold text-muted-foreground hover:text-primary">{t.edit}</button>
+                                <button onClick={() => { if (confirm(t.confirmDeleteVisit)) { dataStore.deleteVisit(visit.id); fetchData(); } }}
+                                  className="text-xs font-bold text-muted-foreground hover:text-rose-500">{t.delete}</button>
                               </div>
                             </td>
                           </tr>

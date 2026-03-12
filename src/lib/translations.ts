@@ -272,6 +272,7 @@ export const translations = {
     confirmDeleteCompany: 'Are you sure you want to delete this company?',
     confirmDeleteService: 'Are you sure you want to delete this service?',
     confirmDeleteLog: 'Are you sure you want to delete this log?',
+    confirmDeleteVisit: 'Are you sure you want to delete this visit/invoice?',
     error: 'Error',
     loadingReport: 'Loading report...',
     loadingFile: 'Loading file...',
