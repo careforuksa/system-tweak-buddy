@@ -72,7 +72,7 @@ export default function CareTrackApp() {
       const allVisits = dataStore.getVisits();
       const unpaidByCompany = allVisits.reduce((acc, v) => {
         if (!v.is_paid && v.company_name) {
-          acc[v.company_name] = (acc[v.company_name] || 0) + (v.amount - (v.paid_amount || 0));
+          acc[v.company_name] = (acc[v.company_name] || 0) + dataStore.getEffectiveBalance(v);
         }
         return acc;
       }, {} as Record<string, number>);
