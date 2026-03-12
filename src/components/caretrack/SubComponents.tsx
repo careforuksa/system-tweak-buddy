@@ -21,7 +21,7 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
   }, [company.id]);
 
   const unpaidVisits = visits.filter(v => !v.is_paid);
-  const totalUnpaid = unpaidVisits.reduce((sum, v) => sum + (v.amount - (v.paid_amount || 0)), 0);
+  const totalUnpaid = unpaidVisits.reduce((sum, v) => sum + dataStore.getEffectiveBalance(v), 0);
 
   if (loading) return <div className="p-8 text-center text-muted-foreground">{t.loadingReport}</div>;
 
