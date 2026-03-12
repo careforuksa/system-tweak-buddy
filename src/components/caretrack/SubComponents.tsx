@@ -15,7 +15,7 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
     const data = dataStore.getVisits({ company_id: company.id });
     setVisits(data);
     const unpaid = data.filter(v => !v.is_paid);
-    const total = unpaid.reduce((sum, v) => sum + (v.amount - (v.paid_amount || 0)), 0);
+    const total = unpaid.reduce((sum, v) => sum + dataStore.getEffectiveBalance(v), 0);
     setReceivedAmount(total.toString());
     setLoading(false);
   }, [company.id]);
