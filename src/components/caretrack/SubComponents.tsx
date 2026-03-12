@@ -58,8 +58,15 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
                 <tr key={visit.id} className="hover:bg-muted/50">
                   <td className="px-4 py-3 font-medium">{visit.patient_name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{new Date(visit.visit_date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</td>
-                  <td className="px-4 py-3 font-bold">{visit.amount} {t.sar}</td>
-                  <td className="px-4 py-3 font-bold text-rose-500">{(visit.amount - (visit.paid_amount || 0))} {t.sar}</td>
+                  <td className="px-4 py-3 font-bold">
+                    {dataStore.getEffectiveAmount(visit).toLocaleString()} {t.sar}
+                    {visit.total_sessions && visit.total_sessions > 1 && (
+                      <span className="block text-[10px] text-muted-foreground">
+                        {visit.used_sessions || (() => { const pkgs = dataStore.getPackages(); const pkg = pkgs.find(p => p.patient_id === visit.patient_id && p.service_id === visit.service_id); return pkg?.used_sessions || 0; })()}/{visit.total_sessions} {t.sessionsCompleted || 'جلسات'}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 font-bold text-rose-500">{dataStore.getEffectiveBalance(visit).toLocaleString()} {t.sar}</td>
                 </tr>
               ))}
               {unpaidVisits.length === 0 && (
