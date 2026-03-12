@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import {
   Users, Building2, Calendar, Plus, DollarSign, CheckCircle2, XCircle,
   LayoutDashboard, Search, Filter, FileText, Menu, X, Bell, AlertCircle,
@@ -763,7 +764,7 @@ export default function CareTrackApp() {
           <AddPatientForm companies={companies} initialData={editingPatient} onSuccess={() => { setEditingPatient(null); fetchData(); }} lang={lang} />
         </Modal>}
         {showAddVisit && <Modal title={t.newVisit} onClose={() => setShowAddVisit(false)}>
-          <AddVisitForm patients={patients} services={services} onSuccess={(nav) => { setShowAddVisit(false); fetchData(); if (nav === 'packages') setActiveTab('packages'); }} lang={lang} />
+          <AddVisitForm patients={patients} services={services} onSuccess={(nav) => { setShowAddVisit(false); fetchData(); if (nav === 'packages') { toast.success(lang === 'ar' ? 'تم إنشاء برنامج علاجي جديد بنجاح' : 'Treatment package created successfully', { description: lang === 'ar' ? 'جاري التحويل للبرامج العلاجية...' : 'Redirecting to treatment packages...', duration: 2000 }); setTimeout(() => setActiveTab('packages'), 1500); } }} lang={lang} />
         </Modal>}
         {editingVisit && <Modal title={t.edit} onClose={() => setEditingVisit(null)}>
           <AddVisitForm patients={patients} services={services} initialData={editingVisit} onSuccess={(nav) => { setEditingVisit(null); fetchData(); if (nav === 'packages') setActiveTab('packages'); }} lang={lang} />
