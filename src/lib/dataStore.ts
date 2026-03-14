@@ -374,6 +374,16 @@ export function addSessionLog(packageId: number, sessionDate: string, notes: str
   }
 }
 
+export function updateSessionLog(logId: number, sessionDate: string, notes: string): void {
+  const logs = getAll<SessionLog>(STORAGE_KEYS.sessionLogs);
+  const idx = logs.findIndex(l => l.id === logId);
+  if (idx !== -1) {
+    logs[idx].session_date = sessionDate;
+    logs[idx].notes = notes;
+    setAll(STORAGE_KEYS.sessionLogs, logs);
+  }
+}
+
 export function deleteSessionLog(logId: number): void {
   const logs = getAll<SessionLog>(STORAGE_KEYS.sessionLogs);
   const log = logs.find(l => l.id === logId);
