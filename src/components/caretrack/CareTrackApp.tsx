@@ -779,7 +779,11 @@ export default function CareTrackApp() {
           <AddPackageForm patients={patients} services={services} onSuccess={() => { setShowAddPackage(false); fetchData(); }} lang={lang} />
         </Modal>}
         {selectedPackage && <Modal title={t.viewFullDetails} onClose={() => setSelectedPackage(null)}>
-          <PackageDetails pkg={selectedPackage} onUpdate={fetchData} lang={lang} />
+          <PackageDetails pkg={selectedPackage} onUpdate={fetchData} onDelete={() => {
+            dataStore.deletePackage(selectedPackage.id);
+            setSelectedPackage(null);
+            fetchData();
+          }} lang={lang} />
         </Modal>}
         {selectedCompanyForReport && <Modal title={`${t.performanceReport}: ${selectedCompanyForReport.name}`} onClose={() => setSelectedCompanyForReport(null)} maxWidth="max-w-xl">
           <CompanyReport company={selectedCompanyForReport} onMarkPaid={(amount) => { handleMarkCompanyPaid(selectedCompanyForReport, amount); setSelectedCompanyForReport(null); }} lang={lang} />

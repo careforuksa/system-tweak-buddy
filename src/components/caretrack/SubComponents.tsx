@@ -164,7 +164,7 @@ export function PatientFile({ patient, services, onAddVisit, lang }: { patient: 
   );
 }
 
-export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate: () => void; lang: 'ar' | 'en' }) {
+export function PackageDetails({ pkg, onUpdate, onDelete, lang }: { pkg: Package; onUpdate: () => void; onDelete?: () => void; lang: 'ar' | 'en' }) {
   const t = translations[lang];
   const [logs, setLogs] = useState<SessionLog[]>([]);
   const [showLogForm, setShowLogForm] = useState(false);
@@ -289,6 +289,15 @@ export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate
           )}
         </div>
       </div>
+
+      {onDelete && (
+        <button onClick={() => {
+          if (confirm(t.confirmDeletePackage)) onDelete();
+        }}
+          className="w-full mt-4 bg-destructive/10 text-destructive font-bold py-2.5 rounded-xl hover:bg-destructive/20 transition-colors text-sm flex items-center justify-center gap-2">
+          <X size={16} /> {t.deletePackage}
+        </button>
+      )}
     </div>
   );
 }
