@@ -347,6 +347,12 @@ export function addPackage(data: { patient_id: number; service_id: number; total
   return pkg;
 }
 
+export function deletePackage(id: number): void {
+  const logs = getAll<SessionLog>(STORAGE_KEYS.sessionLogs);
+  setAll(STORAGE_KEYS.sessionLogs, logs.filter(l => l.package_id !== id));
+  setAll(STORAGE_KEYS.packages, getAll<Package>(STORAGE_KEYS.packages).filter(p => p.id !== id));
+}
+
 // ===== Session Logs =====
 export function getSessionLogs(packageId: number): SessionLog[] {
   return getAll<SessionLog>(STORAGE_KEYS.sessionLogs).filter(l => l.package_id === packageId);
