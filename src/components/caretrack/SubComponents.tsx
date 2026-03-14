@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { FileText, CheckCircle2, AlertCircle, DollarSign, Printer, Plus, X, Clock } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, DollarSign, Printer, Plus, X, Clock, Pencil } from 'lucide-react';
 import { translations } from '@/lib/translations';
 import { Company, Visit, Patient, Service, Package, SessionLog } from '@/types/caretrack';
 import * as dataStore from '@/lib/dataStore';
