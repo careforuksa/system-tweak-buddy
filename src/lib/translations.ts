@@ -291,6 +291,7 @@ export const translations = {
     totalSessions: 'Total Sessions',
     sessionLogs: 'Session Logs',
     logNewSession: 'Log New Session',
+    editSession: 'Edit Session',
     noSessionsLogged: 'No sessions logged yet',
     serviceManagement: 'Service Management',
     serviceManagementDesc: 'Add or remove service types available in the system',
