@@ -289,6 +289,15 @@ export function PackageDetails({ pkg, onUpdate, onDelete, lang }: { pkg: Package
           )}
         </div>
       </div>
+
+      {onDelete && (
+        <button onClick={() => {
+          if (confirm(t.confirmDeletePackage)) onDelete();
+        }}
+          className="w-full mt-4 bg-destructive/10 text-destructive font-bold py-2.5 rounded-xl hover:bg-destructive/20 transition-colors text-sm flex items-center justify-center gap-2">
+          <X size={16} /> {t.deletePackage}
+        </button>
+      )}
     </div>
   );
 }
