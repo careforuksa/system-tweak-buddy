@@ -164,7 +164,7 @@ export function PatientFile({ patient, services, onAddVisit, lang }: { patient: 
   );
 }
 
-export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate: () => void; lang: 'ar' | 'en' }) {
+export function PackageDetails({ pkg, onUpdate, onDelete, lang }: { pkg: Package; onUpdate: () => void; onDelete?: () => void; lang: 'ar' | 'en' }) {
   const t = translations[lang];
   const [logs, setLogs] = useState<SessionLog[]>([]);
   const [showLogForm, setShowLogForm] = useState(false);
