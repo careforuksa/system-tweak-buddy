@@ -130,6 +130,7 @@ export const translations = {
     totalSessions: 'إجمالي عدد الجلسات',
     sessionLogs: 'سجل الجلسات',
     logNewSession: 'تسجيل جلسة جديدة',
+    editSession: 'تعديل الجلسة',
     noSessionsLogged: 'لا توجد جلسات مسجلة بعد',
     serviceManagement: 'إدارة أنواع الخدمات',
     serviceManagementDesc: 'أضف أو احذف أنواع الخدمات المتاحة في النظام',
