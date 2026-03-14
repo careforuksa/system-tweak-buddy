@@ -170,6 +170,9 @@ export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate
   const [showLogForm, setShowLogForm] = useState(false);
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [editingLog, setEditingLog] = useState<SessionLog | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
     setLogs(dataStore.getSessionLogs(pkg.id));
@@ -187,6 +190,22 @@ export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate
   const handleDeleteLog = (id: number) => {
     if (confirm(t.confirmDeleteLog)) {
       dataStore.deleteSessionLog(id);
+      setLogs(dataStore.getSessionLogs(pkg.id));
+      onUpdate();
+    }
+  };
+
+  const handleStartEdit = (log: SessionLog) => {
+    setEditingLog(log);
+    setEditDate(log.session_date);
+    setEditNotes(log.notes);
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingLog) {
+      dataStore.updateSessionLog(editingLog.id, editDate, editNotes);
+      setEditingLog(null);
       setLogs(dataStore.getSessionLogs(pkg.id));
       onUpdate();
     }
@@ -227,19 +246,42 @@ export function PackageDetails({ pkg, onUpdate, lang }: { pkg: Package; onUpdate
 
         <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
           {logs.map((log, index) => (
-            <div key={log.id} className="flex items-start justify-between p-3 bg-card border border-border rounded-xl">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center text-primary font-bold text-xs">
-                  {logs.length - index}
+            <div key={log.id} className="p-3 bg-card border border-border rounded-xl">
+              {editingLog?.id === log.id ? (
+                <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  onSubmit={handleSaveEdit} className="space-y-2">
+                  <input type="date" required value={editDate} onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-muted border border-border rounded-lg outline-none text-sm" />
+                  <textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)}
+                    placeholder={t.sessionNotes}
+                    className="w-full px-3 py-1.5 bg-muted border border-border rounded-lg outline-none h-16 resize-none text-sm" />
+                  <div className="flex gap-2">
+                    <button type="submit" className="flex-1 bg-primary text-primary-foreground font-bold py-1.5 rounded-lg text-sm">{t.save}</button>
+                    <button type="button" onClick={() => setEditingLog(null)}
+                      className="flex-1 bg-muted text-foreground font-bold py-1.5 rounded-lg text-sm border border-border">{t.cancel}</button>
+                  </div>
+                </motion.form>
+              ) : (
+                <div className="flex items-start justify-between">
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center text-primary font-bold text-xs">
+                      {logs.length - index}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold">{new Date(log.session_date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</div>
+                      {log.notes && <p className="text-xs text-muted-foreground mt-1">{log.notes}</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleStartEdit(log)} className="text-muted-foreground hover:text-primary p-1">
+                      <Pencil size={13} />
+                    </button>
+                    <button onClick={() => handleDeleteLog(log.id)} className="text-muted-foreground hover:text-destructive p-1">
+                      <X size={14} />
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-bold">{new Date(log.session_date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</div>
-                  {log.notes && <p className="text-xs text-muted-foreground mt-1">{log.notes}</p>}
-                </div>
-              </div>
-              <button onClick={() => handleDeleteLog(log.id)} className="text-muted-foreground hover:text-rose-500">
-                <X size={14} />
-              </button>
+              )}
             </div>
           ))}
           {logs.length === 0 && (
