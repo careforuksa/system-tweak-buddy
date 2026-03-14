@@ -113,6 +113,8 @@ export const translations = {
     confirmDeleteService: 'هل أنت متأكد من حذف هذه الخدمة؟',
     confirmDeleteLog: 'هل أنت متأكد من حذف هذا السجل؟',
     confirmDeleteVisit: 'هل أنت متأكد من حذف هذه الزيارة/الفاتورة؟',
+    confirmDeletePackage: 'هل أنت متأكد من حذف هذا البرنامج العلاجي وجميع جلساته؟',
+    deletePackage: 'حذف البرنامج',
     error: 'خطأ',
     loadingReport: 'جاري تحميل التقرير...',
     loadingFile: 'جاري تحميل الملف...',
