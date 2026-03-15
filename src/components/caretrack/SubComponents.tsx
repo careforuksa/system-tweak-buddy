@@ -12,12 +12,13 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
   const [receivedAmount, setReceivedAmount] = useState<string>('');
 
   useEffect(() => {
-    const data = dataStore.getVisits({ company_id: company.id });
-    setVisits(data);
-    const unpaid = data.filter(v => !v.is_paid);
-    const total = unpaid.reduce((sum, v) => sum + dataStore.getEffectiveBalance(v), 0);
-    setReceivedAmount(total.toString());
-    setLoading(false);
+    dataStore.getVisits({ company_id: company.id }).then(data => {
+      setVisits(data);
+      const unpaid = data.filter(v => !v.is_paid);
+      const total = unpaid.reduce((sum, v) => sum + dataStore.getEffectiveBalance(v), 0);
+      setReceivedAmount(total.toString());
+      setLoading(false);
+    });
   }, [company.id]);
 
   const unpaidVisits = visits.filter(v => !v.is_paid);
@@ -59,12 +60,7 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
                   <td className="px-4 py-3 font-medium">{visit.patient_name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{new Date(visit.visit_date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</td>
                   <td className="px-4 py-3 font-bold">
-                    {dataStore.getEffectiveAmount(visit).toLocaleString()} {t.sar}
-                    {visit.total_sessions && visit.total_sessions > 1 && (
-                      <span className="block text-[10px] text-muted-foreground">
-                        {visit.used_sessions || (() => { const pkgs = dataStore.getPackages(); const pkg = pkgs.find(p => p.patient_id === visit.patient_id && p.service_id === visit.service_id); return pkg?.used_sessions || 0; })()}/{visit.total_sessions} {t.sessionsCompleted || 'جلسات'}
-                      </span>
-                    )}
+                    {dataStore.getEffectiveAmountSync(visit).toLocaleString()} {t.sar}
                   </td>
                   <td className="px-4 py-3 font-bold text-rose-500">{dataStore.getEffectiveBalance(visit).toLocaleString()} {t.sar}</td>
                 </tr>
@@ -109,7 +105,11 @@ export function CompanyReport({ company, onMarkPaid, lang }: { company: Company;
 
 export function PatientFile({ patient, services, onAddVisit, lang }: { patient: Patient; services: Service[]; onAddVisit: () => void; lang: 'ar' | 'en' }) {
   const t = translations[lang];
-  const visits = dataStore.getVisits({ patient_id: patient.id });
+  const [visits, setVisits] = useState<Visit[]>([]);
+
+  useEffect(() => {
+    dataStore.getVisits({ patient_id: patient.id }).then(setVisits);
+  }, [patient.id]);
 
   return (
     <div className="space-y-6">
@@ -174,23 +174,25 @@ export function PackageDetails({ pkg, onUpdate, onDelete, lang }: { pkg: Package
   const [editDate, setEditDate] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
+  const refreshLogs = () => dataStore.getSessionLogs(pkg.id).then(setLogs);
+
   useEffect(() => {
-    setLogs(dataStore.getSessionLogs(pkg.id));
+    refreshLogs();
   }, [pkg.id]);
 
-  const handleAddLog = (e: React.FormEvent) => {
+  const handleAddLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    dataStore.addSessionLog(pkg.id, sessionDate, notes);
+    await dataStore.addSessionLog(pkg.id, sessionDate, notes);
     setNotes('');
     setShowLogForm(false);
-    setLogs(dataStore.getSessionLogs(pkg.id));
+    await refreshLogs();
     onUpdate();
   };
 
-  const handleDeleteLog = (id: number) => {
+  const handleDeleteLog = async (id: number) => {
     if (confirm(t.confirmDeleteLog)) {
-      dataStore.deleteSessionLog(id);
-      setLogs(dataStore.getSessionLogs(pkg.id));
+      await dataStore.deleteSessionLog(id);
+      await refreshLogs();
       onUpdate();
     }
   };
@@ -201,12 +203,12 @@ export function PackageDetails({ pkg, onUpdate, onDelete, lang }: { pkg: Package
     setEditNotes(log.notes);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingLog) {
-      dataStore.updateSessionLog(editingLog.id, editDate, editNotes);
+      await dataStore.updateSessionLog(editingLog.id, editDate, editNotes);
       setEditingLog(null);
-      setLogs(dataStore.getSessionLogs(pkg.id));
+      await refreshLogs();
       onUpdate();
     }
   };

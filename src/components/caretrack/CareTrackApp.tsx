@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import {
   Users, Building2, Calendar, Plus, DollarSign, CheckCircle2, XCircle,
   LayoutDashboard, Search, Filter, FileText, Menu, X, Bell, AlertCircle,
-  Clock, BarChart3, Download, Printer, TrendingUp
+  Clock, BarChart3, Download, Printer, TrendingUp, LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -13,8 +13,10 @@ import { Company, Patient, Visit, Service, Package, Stats, TabType } from '@/typ
 import { StatCard, Modal, SidebarItem } from './SharedComponents';
 import { AddPatientForm, AddVisitForm, AddCompanyForm, AddPackageForm } from './Forms';
 import { CompanyReport, PatientFile, PackageDetails } from './SubComponents';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function CareTrackApp() {
+  const { user, signOut } = useAuth();
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -25,6 +27,7 @@ export default function CareTrackApp() {
   const [services, setServices] = useState<Service[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
@@ -51,26 +54,42 @@ export default function CareTrackApp() {
   const [visitEndDate, setVisitEndDate] = useState('');
   const [showVisitFilters, setShowVisitFilters] = useState(false);
 
-  const fetchData = useCallback(() => {
-    setStats(dataStore.getStats());
-    setPatients(dataStore.getPatients());
-    setCompanies(dataStore.getCompanies());
-    setVisits(dataStore.getVisits());
-    setServices(dataStore.getServices());
-    setPackages(dataStore.getPackages());
+  const fetchData = useCallback(async () => {
+    try {
+      const [s, p, c, v, sv, pk] = await Promise.all([
+        dataStore.getStats(),
+        dataStore.getPatients(),
+        dataStore.getCompanies(),
+        dataStore.getVisits(),
+        dataStore.getServices(),
+        dataStore.getPackages(),
+      ]);
+      setStats(s);
+      setPatients(p);
+      setCompanies(c);
+      setVisits(v);
+      setServices(sv);
+      setPackages(pk);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    fetchData();
-    if (activeTab === 'companies') {
-      setCompanyStats(dataStore.getCompanyStats(startDate, endDate));
-    }
-  }, [activeTab, startDate, endDate, fetchData]);
+    dataStore.initDefaultsIfNeeded().then(() => fetchData());
+  }, [fetchData]);
 
   useEffect(() => {
-    if (companies.length > 0) {
-      const allVisits = dataStore.getVisits();
-      const unpaidByCompany = allVisits.reduce((acc, v) => {
+    if (activeTab === 'companies') {
+      dataStore.getCompanyStats(startDate, endDate).then(setCompanyStats);
+    }
+  }, [activeTab, startDate, endDate]);
+
+  useEffect(() => {
+    if (companies.length > 0 && visits.length > 0) {
+      const unpaidByCompany = visits.reduce((acc, v) => {
         if (!v.is_paid && v.company_name) {
           acc[v.company_name] = (acc[v.company_name] || 0) + dataStore.getEffectiveBalance(v);
         }
@@ -84,31 +103,31 @@ export default function CareTrackApp() {
     }
   }, [companies, visits]);
 
-  const handleTogglePaid = (visitId: number, currentStatus: number, amount?: number) => {
+  const handleTogglePaid = async (visitId: number, currentStatus: number, amount?: number) => {
     const visit = visits.find(v => v.id === visitId);
     if (!visit) return;
     if (amount !== undefined) {
-      dataStore.updateVisit(visitId, {
+      await dataStore.updateVisit(visitId, {
         paid_amount: (visit.paid_amount || 0) + amount,
         is_paid: (visit.paid_amount || 0) + amount >= visit.amount ? 1 : 0,
       });
     } else {
-      dataStore.toggleVisitPaid(visitId, !currentStatus);
+      await dataStore.toggleVisitPaid(visitId, !currentStatus);
     }
     fetchData();
   };
 
-  const handlePostponeVisit = (visitId: number) => {
-    dataStore.updateVisit(visitId, { is_postponed: 1 });
+  const handlePostponeVisit = async (visitId: number) => {
+    await dataStore.updateVisit(visitId, { is_postponed: 1 });
     fetchData();
     alert(t.paymentPostponed);
   };
 
-  const handleMarkCompanyPaid = (company: Company, amount?: number) => {
+  const handleMarkCompanyPaid = async (company: Company, amount?: number) => {
     if (amount !== undefined) {
-      dataStore.markCompanyPaid(company.id, amount);
+      await dataStore.markCompanyPaid(company.id, amount);
     } else {
-      dataStore.updateCompany(company.id, { last_payment_date: new Date().toISOString().split('T')[0] });
+      await dataStore.updateCompany(company.id, { last_payment_date: new Date().toISOString().split('T')[0] });
     }
     fetchData();
     setSelectedCompanyForReport(null);
@@ -144,6 +163,19 @@ export default function CareTrackApp() {
     XLSX.utils.book_append_sheet(wb, ws, t.visits);
     XLSX.writeFile(wb, `${t.visits}_${new Date().toLocaleDateString()}.xlsx`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-primary-foreground mx-auto mb-4 animate-pulse">
+            <LayoutDashboard size={24} />
+          </div>
+          <p className="text-muted-foreground">جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -208,9 +240,13 @@ export default function CareTrackApp() {
               className="w-full mb-4 py-2 bg-muted rounded-xl text-xs font-bold text-muted-foreground hover:bg-border transition-colors">
               {lang === 'ar' ? 'Switch to English' : 'التحويل للعربية'}
             </button>
+            <button onClick={signOut}
+              className="w-full mb-4 py-2 bg-destructive/10 text-destructive rounded-xl text-xs font-bold hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2">
+              <LogOut size={14} /> {lang === 'ar' ? 'تسجيل خروج' : 'Sign Out'}
+            </button>
             <div className="p-4 bg-muted rounded-2xl border border-border">
               <p className="text-xs text-muted-foreground mb-1">{t.currentUser}</p>
-              <p className="text-sm font-semibold">{t.careProvider}</p>
+              <p className="text-sm font-semibold truncate">{user?.user_metadata?.full_name || user?.email}</p>
             </div>
           </div>
         </aside>
@@ -358,9 +394,9 @@ export default function CareTrackApp() {
                   <div className="pt-4 border-t border-border flex justify-between items-center text-xs text-muted-foreground">
                     <span>{t.joinedIn}: {new Date(patient.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</span>
                     <button onClick={() => setEditingPatient(patient)} className="text-primary font-bold hover:underline">{t.edit}</button>
-                    <button onClick={() => {
+                    <button onClick={async () => {
                       if (confirm(t.confirmDeletePatient)) {
-                        const result = dataStore.deletePatient(patient.id);
+                        const result = await dataStore.deletePatient(patient.id);
                         if (result.ok) fetchData();
                         else alert(`${t.error}: ${result.error}`);
                       }
@@ -503,7 +539,7 @@ export default function CareTrackApp() {
                                     visit.is_paid ? 'text-muted-foreground hover:text-amber-600' : 'text-primary hover:bg-secondary'
                                   }`}>{visit.is_paid ? t.undo : t.confirm}</button>
                                 <button onClick={() => setEditingVisit(visit)} className="text-xs font-bold text-muted-foreground hover:text-primary">{t.edit}</button>
-                                <button onClick={() => { if (confirm(t.confirmDeleteVisit)) { dataStore.deleteVisit(visit.id); fetchData(); } }}
+                                <button onClick={async () => { if (confirm(t.confirmDeleteVisit)) { await dataStore.deleteVisit(visit.id); fetchData(); } }}
                                   className="text-xs font-bold text-muted-foreground hover:text-rose-500">{t.delete}</button>
                               </div>
                             </td>
@@ -564,9 +600,9 @@ export default function CareTrackApp() {
                             className="flex-1 bg-secondary text-primary font-bold py-2 rounded-xl hover:opacity-80 text-sm">{t.viewFullDetails}</button>
                           <button onClick={() => setEditingCompany(company)}
                             className="px-4 bg-muted text-muted-foreground font-bold py-2 rounded-xl hover:opacity-80 text-sm">{t.edit}</button>
-                          <button onClick={() => {
+                          <button onClick={async () => {
                             if (confirm(t.confirmDeleteCompany)) {
-                              const result = dataStore.deleteCompany(company.id);
+                              const result = await dataStore.deleteCompany(company.id);
                               if (result.ok) fetchData();
                               else alert(`${t.error}: ${result.error}`);
                             }
@@ -612,11 +648,11 @@ export default function CareTrackApp() {
                   <p className="text-muted-foreground text-sm">{t.serviceManagementDesc}</p>
                 </div>
                 <div className="p-6 space-y-6">
-                  <form onSubmit={(e) => {
+                  <form onSubmit={async (e) => {
                     e.preventDefault();
                     const form = e.target as HTMLFormElement;
                     const name = (form.elements.namedItem('serviceName') as HTMLInputElement).value;
-                    dataStore.addService(name);
+                    await dataStore.addService(name);
                     form.reset();
                     fetchData();
                   }} className="flex gap-2">
@@ -628,8 +664,8 @@ export default function CareTrackApp() {
                     {services.map(service => (
                       <div key={service.id} className="flex items-center justify-between p-3 bg-muted rounded-xl border border-border">
                         <span className="font-medium">{service.name}</span>
-                        <button onClick={() => {
-                          if (confirm(t.confirmDeleteService)) { dataStore.deleteService(service.id); fetchData(); }
+                        <button onClick={async () => {
+                          if (confirm(t.confirmDeleteService)) { await dataStore.deleteService(service.id); fetchData(); }
                         }} className="text-rose-500 hover:opacity-80 p-1"><X size={18} /></button>
                       </div>
                     ))}
@@ -779,8 +815,8 @@ export default function CareTrackApp() {
           <AddPackageForm patients={patients} services={services} onSuccess={() => { setShowAddPackage(false); fetchData(); }} lang={lang} />
         </Modal>}
         {selectedPackage && <Modal title={t.viewFullDetails} onClose={() => setSelectedPackage(null)}>
-          <PackageDetails pkg={selectedPackage} onUpdate={fetchData} onDelete={() => {
-            dataStore.deletePackage(selectedPackage.id);
+          <PackageDetails pkg={selectedPackage} onUpdate={fetchData} onDelete={async () => {
+            await dataStore.deletePackage(selectedPackage.id);
             setSelectedPackage(null);
             fetchData();
           }} lang={lang} />
@@ -807,9 +843,19 @@ function ReportsSection({ startDate, endDate, setStartDate, setEndDate, companie
   const t = translations[lang];
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [viewType, setViewType] = useState<'summary' | 'detailed'>('summary');
+  const [companyStatsData, setCompanyStatsData] = useState<any[]>([]);
+  const [visitsData, setVisitsData] = useState<Visit[]>([]);
 
-  const companyStatsData = dataStore.getCompanyStats(startDate, endDate, selectedCompany !== 'all' ? parseInt(selectedCompany) : undefined);
-  const visitsData = dataStore.getVisits({ start_date: startDate, end_date: endDate, company_id: selectedCompany !== 'all' ? parseInt(selectedCompany) : undefined });
+  useEffect(() => {
+    const companyId = selectedCompany !== 'all' ? parseInt(selectedCompany) : undefined;
+    Promise.all([
+      dataStore.getCompanyStats(startDate, endDate, companyId),
+      dataStore.getVisits({ start_date: startDate, end_date: endDate, company_id: companyId }),
+    ]).then(([stats, visits]) => {
+      setCompanyStatsData(stats);
+      setVisitsData(visits);
+    });
+  }, [startDate, endDate, selectedCompany]);
 
   const totalAmount = companyStatsData.reduce((sum: number, s: any) => sum + (s.total_amount || 0), 0);
   const totalVisitsCount = companyStatsData.reduce((sum: number, s: any) => sum + (s.visit_count || 0), 0);
