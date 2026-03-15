@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building2, Clock, Package as PackageIcon } from 'lucide-react';
 import { translations } from '@/lib/translations';
 import { Company, Patient, Visit, Service, Package } from '@/types/caretrack';
@@ -10,12 +10,12 @@ export function AddPatientForm({ companies, onSuccess, initialData, lang }: { co
   const [companyId, setCompanyId] = useState(initialData?.company_id?.toString() || '');
   const [status, setStatus] = useState(initialData?.status || 'active');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (initialData) {
-      dataStore.updatePatient(initialData.id, { name, company_id: companyId ? parseInt(companyId) : (null as any), status });
+      await dataStore.updatePatient(initialData.id, { name, company_id: companyId ? parseInt(companyId) : (null as any), status });
     } else {
-      dataStore.addPatient({ name, company_id: companyId ? parseInt(companyId) : null });
+      await dataStore.addPatient({ name, company_id: companyId ? parseInt(companyId) : null });
     }
     onSuccess();
   };
@@ -64,28 +64,34 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isPaid, setIsPaid] = useState(initialData?.is_paid === 1);
   const [selectedPackageId, setSelectedPackageId] = useState('');
+  const [patientPackages, setPatientPackages] = useState<Package[]>([]);
 
   const selectedPatient = patients.find(p => p.id.toString() === patientId);
   const isCompanyPatient = !!selectedPatient?.company_id;
 
-  // Get active packages for the selected patient
-  const allPackages = dataStore.getPackages();
-  const patientPackages = patientId
-    ? allPackages.filter(p => p.patient_id === parseInt(patientId) && p.status === 'active')
-    : [];
+  // Load packages when patient changes
+  useEffect(() => {
+    if (patientId) {
+      dataStore.getPackages().then(allPkgs => {
+        const filtered = allPkgs.filter(p => p.patient_id === parseInt(patientId) && p.status === 'active');
+        setPatientPackages(filtered);
+      });
+    } else {
+      setPatientPackages([]);
+    }
+  }, [patientId]);
 
-  // Filter by selected service if chosen
   const matchingPackages = serviceId
     ? patientPackages.filter(p => p.service_id === parseInt(serviceId))
     : patientPackages;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalPaidAmount = isCompanyPatient ? 0 : parseFloat(paidAmount);
     const finalIsPaid = isCompanyPatient ? 0 : (isPaid || finalPaidAmount >= parseFloat(amount) ? 1 : 0);
 
     if (initialData && initialData.id > 0) {
-      dataStore.updateVisit(initialData.id, {
+      await dataStore.updateVisit(initialData.id, {
         patient_id: parseInt(patientId),
         service_id: parseInt(serviceId),
         visit_date: date,
@@ -96,7 +102,7 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
         is_paid: finalIsPaid,
       });
     } else {
-      dataStore.addVisit({
+      await dataStore.addVisit({
         patient_id: parseInt(patientId),
         service_id: parseInt(serviceId),
         visit_date: date,
@@ -107,9 +113,8 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
         is_paid: finalIsPaid,
       });
 
-      // Log session to selected package
       if (selectedPackageId && selectedPackageId !== 'new') {
-        dataStore.addSessionLog(parseInt(selectedPackageId), date, notes || '');
+        await dataStore.addSessionLog(parseInt(selectedPackageId), date, notes || '');
       }
     }
     const sessions = parseInt(totalSessions) || 1;
@@ -157,7 +162,6 @@ export function AddVisitForm({ patients, services, onSuccess, initialData, lang 
           )}
         </div>
       )}
-      {/* Add to Package option */}
       {!initialData && patientId && matchingPackages.length > 0 && (
         <div>
           <label className="block text-sm font-bold text-foreground mb-1">
@@ -222,13 +226,13 @@ export function AddCompanyForm({ onSuccess, initialData, lang }: { onSuccess: ()
   const [period, setPeriod] = useState(initialData?.payment_period || 'monthly');
   const [nextDate, setNextDate] = useState(initialData?.next_payment_date || '');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const companyData = { name, contact_person: contact, phone, payment_period: period as any, last_payment_date: initialData?.last_payment_date || null, next_payment_date: nextDate || null };
     if (initialData) {
-      dataStore.updateCompany(initialData.id, companyData);
+      await dataStore.updateCompany(initialData.id, companyData);
     } else {
-      dataStore.addCompany(companyData);
+      await dataStore.addCompany(companyData);
     }
     onSuccess();
   };
@@ -281,9 +285,9 @@ export function AddPackageForm({ patients, services, onSuccess, lang }: { patien
   const [serviceId, setServiceId] = useState('');
   const [totalSessions, setTotalSessions] = useState('24');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dataStore.addPackage({ patient_id: parseInt(patientId), service_id: parseInt(serviceId), total_sessions: parseInt(totalSessions) });
+    await dataStore.addPackage({ patient_id: parseInt(patientId), service_id: parseInt(serviceId), total_sessions: parseInt(totalSessions) });
     onSuccess();
   };
 
