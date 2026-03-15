@@ -14,7 +14,241 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          contact_person: string | null
+          created_at: string
+          id: number
+          last_payment_date: string | null
+          name: string
+          next_payment_date: string | null
+          payment_period: string | null
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_person?: string | null
+          created_at?: string
+          id?: never
+          last_payment_date?: string | null
+          name: string
+          next_payment_date?: string | null
+          payment_period?: string | null
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_person?: string | null
+          created_at?: string
+          id?: never
+          last_payment_date?: string | null
+          name?: string
+          next_payment_date?: string | null
+          payment_period?: string | null
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      packages: {
+        Row: {
+          created_at: string
+          id: number
+          patient_id: number
+          service_id: number | null
+          status: string | null
+          total_sessions: number
+          used_sessions: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          patient_id: number
+          service_id?: number | null
+          status?: string | null
+          total_sessions?: number
+          used_sessions?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          patient_id?: number
+          service_id?: number | null
+          status?: string | null
+          total_sessions?: number
+          used_sessions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packages_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          company_id: number | null
+          created_at: string
+          id: number
+          name: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          company_id?: number | null
+          created_at?: string
+          id?: never
+          name: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          company_id?: number | null
+          created_at?: string
+          id?: never
+          name?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      session_logs: {
+        Row: {
+          created_at: string
+          id: number
+          notes: string | null
+          package_id: number
+          session_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          notes?: string | null
+          package_id: number
+          session_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          notes?: string | null
+          package_id?: number
+          session_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_logs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visits: {
+        Row: {
+          amount: number | null
+          created_at: string
+          id: number
+          is_paid: number | null
+          is_postponed: number | null
+          notes: string | null
+          paid_amount: number | null
+          patient_id: number
+          service_id: number | null
+          total_sessions: number | null
+          user_id: string
+          visit_date: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          id?: never
+          is_paid?: number | null
+          is_postponed?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          patient_id: number
+          service_id?: number | null
+          total_sessions?: number | null
+          user_id: string
+          visit_date: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          id?: never
+          is_paid?: number | null
+          is_postponed?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          patient_id?: number
+          service_id?: number | null
+          total_sessions?: number | null
+          user_id?: string
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
